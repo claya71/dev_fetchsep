@@ -12,7 +12,7 @@ import tkinter.ttk
 import itertools
 
 import config
-import download_proton_flux
+# import download_proton_flux
 
 
 # from ..utils import read_datasets as datasets
@@ -26,6 +26,7 @@ Made by Clayton Allison and Luke Stegeman
 
 def from_fetchsep(fetchsep_filename, flux_files = None, energy_channel = '10.0--1 MeV'):
     # read idsep_file and get start/end time lists
+    # these headers aren't actually used but here for me to look at and reference
     headers = ['Start Time', 'End Time', 'Experiment', 'Flux Type', 'Flags', 'User Experiment Name',  'User Filename', 'Options', 'BGStart', 'BGEnd', 'JSON Type', 'Spacecraft', 'IDSEP Path', 'Location', 'Species']
     
     df = pd.read_csv(fetchsep_filename) #
@@ -95,7 +96,8 @@ def create_checksep_list(fetchsep_file, checksep_ends):
             start_entry = checksep_ends[e-1]
             end_entry = datetime.datetime.strptime(str(checksep_ends[e]), '%Y-%m-%d %H:%M:%S')
         for d in range(len(fetchsep_dataframe)):
-            if end_entry == fetchsep_dataframe['End Time'][d]:
+            # print(type(fetchsep_dataframe['End Time'][d]), type(end_entry))
+            if end_entry == pd.to_datetime(fetchsep_dataframe['End Time'][d]):
                 exp_entry = fetchsep_dataframe['Experiment'][d]
                 flux_entry = fetchsep_dataframe['Flux Type'][d]
                 flag_entry = fetchsep_dataframe['Flags'][d]
@@ -109,6 +111,7 @@ def create_checksep_list(fetchsep_file, checksep_ends):
                 path_entry = fetchsep_dataframe['IDSEP Path'][d]
                 loc_entry = fetchsep_dataframe['Location'][d]
                 spec_entry = fetchsep_dataframe['Species'][d]
+                break
             elif checksep_ends[e] > pd.to_datetime(fetchsep_dataframe['#Start Time'][d]) and checksep_ends[e] < pd.to_datetime(fetchsep_dataframe['End Time'][d]):
                 exp_entry = fetchsep_dataframe['Experiment'][d]
                 flux_entry = fetchsep_dataframe['Flux Type'][d]
@@ -123,6 +126,7 @@ def create_checksep_list(fetchsep_file, checksep_ends):
                 path_entry = fetchsep_dataframe['IDSEP Path'][d]
                 loc_entry = fetchsep_dataframe['Location'][d]
                 spec_entry = fetchsep_dataframe['Species'][d]
+                break
             else:
                 pass
         row = pd.DataFrame.from_dict({'#Start Time': [start_entry],
@@ -168,20 +172,20 @@ def get_proton_data(start_datetime, end_datetime, observation=None, instrument=N
     
     
     if download:
-        if observation is not None:
-            df = pd.read_csv(observation)
-            df = df.rename(columns={'dates' : 'time_tag'})
-            df['time_tag'] = pd.to_datetime(df['time_tag'])
-            for column in df.columns:
-                if column != 'time_tag':
-                    df = df.rename(columns={column : column + ' MeV'})
-        else:
-            if instrument in ['GOES', 'SOHO', 'ACE SIS']:
-                df = download_proton_data(start_datetime, end_datetime, instrument)
-            else:
+        # if observation is not None:
+        #     df = pd.read_csv(observation)
+        #     df = df.rename(columns={'dates' : 'time_tag'})
+        #     df['time_tag'] = pd.to_datetime(df['time_tag'])
+        #     for column in df.columns:
+        #         if column != 'time_tag':
+        #             df = df.rename(columns={column : column + ' MeV'})
+        # else:
+        #     if instrument in ['GOES', 'SOHO', 'ACE SIS']:
+        #         df = download_proton_data(start_datetime, end_datetime, instrument)
+        #     else:
                 print('Sorry. This instrument is not currently supported: ', instrument)
                 exit()
-        return df
+        # return df
     else:
         if observation is not None:
             dates_df = pd.DataFrame()
@@ -197,9 +201,9 @@ def get_proton_data(start_datetime, end_datetime, observation=None, instrument=N
                     dates_df = dates_df.rename(columns={column : column + ' MeV'})
         return dates_df
 
-def download_proton_data(start_datetime, end_datetime, instrument='GOES', energy=[]):
-    df = download_proton_flux.download_flux(instrument, 'proton', start_datetime, end_datetime, backfill_flag=False)
-    return df
+# def download_proton_data(start_datetime, end_datetime, instrument='GOES', energy=[]):
+#     df = download_proton_flux.download_flux(instrument, 'proton', start_datetime, end_datetime, backfill_flag=False)
+#     return df
 
 def format_fetchsep_list(event_list, observation=None, instrument=None, index=0, energy_channel = '10.0 - -1'):
     a = open(event_list, 'r')
@@ -329,7 +333,7 @@ class Line:
 
 
 class errorwindow:
-    def __init__(self):
+    def __init__(self, root):
         self.root = root
         self.new_window = tkinter.Toplevel() 
         self.new_window.title('Warning Window')
@@ -398,6 +402,7 @@ class PlaceholderEntry(tkinter.Entry):
             self.config(fg='gray')
 
 class CheckSEPApp:
+
     def __init__(self, root, events, flux_files, energy_channel):
         self.end_times = []
         self.confirmed_times = []
@@ -528,6 +533,29 @@ class CheckSEPApp:
 
     def format_event_data(self, flux_files, energy_channel):
         counter = 0 
+        
+        dates_df = pd.DataFrame()
+        if type(flux_files) == str:
+            
+            foo = pd.read_csv(flux_files)
+            dates_df = pd.concat([foo, dates_df], ignore_index = True)
+            dates_df = dates_df.rename(columns={'dates' : 'time_tag'})
+            # print(dates_df.columns)
+            dates_df['time_tag'] = pd.to_datetime(dates_df['time_tag'])
+            for column in dates_df.columns:
+                if column != 'time_tag':
+                    dates_df = dates_df.rename(columns={column : column + ' MeV'})
+        else:
+            for i in range(len(flux_files)):
+                foo = pd.read_csv(flux_files[i])
+                dates_df = pd.concat([foo, dates_df], ignore_index = True)
+            dates_df = dates_df.rename(columns={'dates' : 'time_tag'})
+            # print(dates_df.columns)
+            dates_df['time_tag'] = pd.to_datetime(dates_df['time_tag'])
+            for column in dates_df.columns:
+                if column != 'time_tag':
+                    dates_df = dates_df.rename(columns={column : column + ' MeV'})
+
         for  index, event in self.events.iterrows():
             
             # print(type(self.events))
@@ -542,7 +570,7 @@ class CheckSEPApp:
                 # event_data_df = get_proton_data(row['Start Time'], row['End Time'], observation=row['observation'], instrument=row['instrument'])
                 
                 
-            event_data_df = get_proton_data(event['start'], event['end'], observation=flux_files, instrument=event['instrument'])
+            # event_data_df = get_proton_data(event['start'], event['end'], observation=flux_files, instrument=event['instrument'])
             
             duration_timedelta = pd.to_datetime(event['end']) - pd.to_datetime(event['start'])
             duration_seconds = duration_timedelta.total_seconds()
@@ -552,10 +580,10 @@ class CheckSEPApp:
             # input()
             # print(type(duration_timedelta))
             # input()
-            condition = (event_data_df['time_tag'] >= event['start']) & (event_data_df['time_tag'] <= event['end'])
-            time = event_data_df[condition]['time_tag']
+            condition = (dates_df['time_tag'] >= event['start']) & (dates_df['time_tag'] <= event['end'])
+            time = dates_df[condition]['time_tag']
             
-            flux = event_data_df[condition][energy_channel]
+            flux = dates_df[condition][energy_channel]
 
             event_interpretations.append((duration_seconds, duration_timedelta, time, flux)) #, row['list'], row['list_index'], row['energy'], row['observation'], row['instrument'], row['integral'])) #, buffer_time, buffer_flux))
             self.end_times.append(time.to_list()[-1])
@@ -725,7 +753,7 @@ class CheckSEPApp:
     def previous_plot(self):
         """NAVIGATE TO THE PREVIOUS PLOT."""    
         if self.current_plot_index > 0:
-            self.current_plot_index -= 1
+            self.current_plot_index -= 1 
             self.create_plot()
             self.update_table()
 
@@ -739,7 +767,7 @@ class CheckSEPApp:
 
     def reset_manual_lines(self):
         """NAVIGATE TO THE NEXT PLOT."""
-        new_win = errorwindow()
+        new_win = errorwindow(self.root)
         
         if new_win.return_status.get() == "True":
             self.current_ends = []

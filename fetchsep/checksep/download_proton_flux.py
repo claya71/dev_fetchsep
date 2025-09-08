@@ -80,12 +80,12 @@ def download_ace_sis_flux(_, start_datetime, end_datetime, backfill_flag=True, n
     df = download_hapi_flux(flux_type_url, start_datetime, end_datetime, backfill_flag, no_negatives_flag)
     return df
 
-def download_flux(source, _, start_datetime, end_datetime, backfill_flag=True, no_negatives_flag=True):
-    source_function_dict = {'GOES' : download_goes_flux,
-                            'SOHO' : download_soho_flux,
-                            'ACE SIS' : download_ace_sis_flux}
-    df = source_function_dict[source](_, start_datetime, end_datetime, backfill_flag, no_negatives_flag)
-    return df
+# def download_flux(source, _, start_datetime, end_datetime, backfill_flag=True, no_negatives_flag=True):
+#     source_function_dict = {'GOES' : download_goes_flux,
+#                             'SOHO' : download_soho_flux,
+#                             'ACE SIS' : download_ace_sis_flux}
+#     df = source_function_dict[source](_, start_datetime, end_datetime, backfill_flag, no_negatives_flag)
+#     return df
 
     
 
