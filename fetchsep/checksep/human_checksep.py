@@ -10,13 +10,18 @@ import pickle as pkl
 import tkinter
 import tkinter.ttk
 import itertools
-
+import memory_profiler
+import logging
 import config
 # import download_proton_flux
 
 
 # from ..utils import read_datasets as datasets
+# root_logger = logging.getLogger()
+# # #print(root_logger.handlers)
+# # root_logger.handlers.setFormatter(logging.Formatter("%(name)s: %(message)s"))
 
+# profiler_logstream = memory_profiler.LogFile('memory_profiler_logs', True)
 
 """
 checkSEP GUI
@@ -54,18 +59,18 @@ def checksep(df, flux_files, energy_channel, fetchsep_file):
 
 
     # get new end time lists
-    print(confirmed_ends)
-    print(pd.isnull(confirmed_ends))
+    #print(confirmed_ends)
+    #print(pd.isnull(confirmed_ends))
     filter_ = np.where(pd.isnull(confirmed_ends) == False)
-    print(filter_)
+    #print(filter_)
     filtered_ends = [confirmed_ends[x] for x in filter_[0]]
-    print(filtered_ends)
+    #print(filtered_ends)
     filtered_ends = list(itertools.chain.from_iterable(filtered_ends))
-    print(filtered_ends)
+    #print(filtered_ends)
     new_ends = [pd.to_datetime(x) for x in filtered_ends]
-    print(new_ends)
+    #print(new_ends)
     concat_ends = sorted(initial_ends + new_ends)
-    print(concat_ends)
+    #print(concat_ends)
 
     # create output file
 
@@ -85,7 +90,7 @@ def create_checksep_list(fetchsep_file, checksep_ends):
     output_filename = './output/checksep/checksep_batch_event_list.txt'
     fetchsep_dataframe = pd.read_csv(fetchsep_file)
     checksep_dataframe = pd.DataFrame()
-    print(fetchsep_dataframe)
+    #print(fetchsep_dataframe)
     initial_start = fetchsep_dataframe['#Start Time'][0]
     for e in range(len(checksep_ends)):
         if e == 0:
@@ -96,7 +101,7 @@ def create_checksep_list(fetchsep_file, checksep_ends):
             start_entry = checksep_ends[e-1]
             end_entry = datetime.datetime.strptime(str(checksep_ends[e]), '%Y-%m-%d %H:%M:%S')
         for d in range(len(fetchsep_dataframe)):
-            # print(type(fetchsep_dataframe['End Time'][d]), type(end_entry))
+            # #print(type(fetchsep_dataframe['End Time'][d]), type(end_entry))
             if end_entry == pd.to_datetime(fetchsep_dataframe['End Time'][d]):
                 exp_entry = fetchsep_dataframe['Experiment'][d]
                 flux_entry = fetchsep_dataframe['Flux Type'][d]
@@ -183,18 +188,18 @@ def get_proton_data(start_datetime, end_datetime, observation=None, instrument=N
         #     if instrument in ['GOES', 'SOHO', 'ACE SIS']:
         #         df = download_proton_data(start_datetime, end_datetime, instrument)
         #     else:
-                print('Sorry. This instrument is not currently supported: ', instrument)
+                #print('Sorry. This instrument is not currently supported: ', instrument)
                 exit()
         # return df
     else:
         if observation is not None:
             dates_df = pd.DataFrame()
             for i in range(len(observation)):
-                print(observation[i])
+                #print(observation[i])
                 foo = pd.read_csv(observation[i])
                 dates_df = pd.concat([foo, dates_df], ignore_index = True)
             dates_df = dates_df.rename(columns={'dates' : 'time_tag'})
-            # print(dates_df.columns)
+            # #print(dates_df.columns)
             dates_df['time_tag'] = pd.to_datetime(dates_df['time_tag'])
             for column in dates_df.columns:
                 if column != 'time_tag':
@@ -215,14 +220,14 @@ def format_fetchsep_list(event_list, observation=None, instrument=None, index=0,
     #     if line[0] == '#Energy channel':
     #         energy_channel = line[1].lstrip().rstrip()
     #         break
-    # print(energy_channel.split('-'))
+    # #print(energy_channel.split('-'))
     # if float(energy_channel.split(' - ')[1]) == -1:
     #     integral = True
     # else:
     #     integral = False
 
     energy = energy_channel
-    print(event_list)
+    #print(event_list)
     headers = ['Start Time', 'End Time', 'Experiment', 'Flux Type', 'User Experiment Name',  'User Filename', 'Options', 'BGStart', 'BGEnd', 'JSON Type', 'Spacecraft', 'IDSEP Path', 'Location', 'Species']
     event_list_df = pd.read_csv(event_list)
     # event_list_df['start'] = pd.to_datetime(event_list_df['Start Time'])
@@ -253,7 +258,7 @@ def find_overlapping_events(dfs : list, labels : dict, separate_energies : bool,
         end = main_df.iloc[i]['End Time']
         index = main_df.iloc[i]['list_index']
         label = labels[index]
-        print(label)
+        #print(label)
         # energy = main_df.iloc[i]['energy']
         # observation = main_df.iloc[i]['observation']
         instrument = main_df.iloc[i]['Experiment']
@@ -268,8 +273,8 @@ def find_overlapping_events(dfs : list, labels : dict, separate_energies : bool,
             # current_start = start
             # current_end = end
             # current_energy = energy
-        # print('where does this come from', observation)
-        print(start, current_end)
+        # #print('where does this come from', observation)
+        #print(start, current_end)
         if (start <= current_end):
             current_group.append([start, end, index, label, current_energy, observation, instrument, integral_status])
             current_end = max(current_end, end)
@@ -540,7 +545,7 @@ class CheckSEPApp:
             foo = pd.read_csv(flux_files)
             dates_df = pd.concat([foo, dates_df], ignore_index = True)
             dates_df = dates_df.rename(columns={'dates' : 'time_tag'})
-            # print(dates_df.columns)
+            # #print(dates_df.columns)
             dates_df['time_tag'] = pd.to_datetime(dates_df['time_tag'])
             for column in dates_df.columns:
                 if column != 'time_tag':
@@ -550,7 +555,7 @@ class CheckSEPApp:
                 foo = pd.read_csv(flux_files[i])
                 dates_df = pd.concat([foo, dates_df], ignore_index = True)
             dates_df = dates_df.rename(columns={'dates' : 'time_tag'})
-            # print(dates_df.columns)
+            # #print(dates_df.columns)
             dates_df['time_tag'] = pd.to_datetime(dates_df['time_tag'])
             for column in dates_df.columns:
                 if column != 'time_tag':
@@ -558,14 +563,14 @@ class CheckSEPApp:
 
         for  index, event in self.events.iterrows():
             
-            # print(type(self.events))
-            # print('type', type(event), type(self.events))
-            # print(self.events['energy'][0])
+            # #print(type(self.events))
+            # #print('type', type(event), type(self.events))
+            # #print(self.events['energy'][0])
             # input()
             event_interpretations = []
 
             self.events['duration'] = ''# self.events.assign(['duration'][:] = '')
-            # print('this is event', event)
+            # #print('this is event', event)
             # for row_index, row in event.iterrows():
                 # event_data_df = get_proton_data(row['Start Time'], row['End Time'], observation=row['observation'], instrument=row['instrument'])
                 
@@ -576,9 +581,9 @@ class CheckSEPApp:
             duration_seconds = duration_timedelta.total_seconds()
             # self.events[counter].loc[index, 'duration'] = duration_timedelta
             event.loc['duration'] = duration_timedelta
-            print(event.loc['duration'])
+            #print(event.loc['duration'])
             # input()
-            # print(type(duration_timedelta))
+            # #print(type(duration_timedelta))
             # input()
             condition = (dates_df['time_tag'] >= event['start']) & (dates_df['time_tag'] <= event['end'])
             time = dates_df[condition]['time_tag']
@@ -588,7 +593,7 @@ class CheckSEPApp:
             event_interpretations.append((duration_seconds, duration_timedelta, time, flux)) #, row['list'], row['list_index'], row['energy'], row['observation'], row['instrument'], row['integral'])) #, buffer_time, buffer_flux))
             self.end_times.append(time.to_list()[-1])
             
-            # print((duration_seconds, duration_timedelta, time, flux, row['list'], row['list_index'], row['energy'], row['observation'], row['instrument'], row['integral']))
+            # #print((duration_seconds, duration_timedelta, time, flux, row['list'], row['list_index'], row['energy'], row['observation'], row['instrument'], row['integral']))
             # input()
             try:
                 event_interpretations.sort(reverse=True)
@@ -618,8 +623,8 @@ class CheckSEPApp:
             
             # duration_seconds, duration_timedelta, x, y, list_name, index, energy, observation, instrument, integral = event_interpretation
             duration_seconds, duration_timedelta, x, y = event_interpretation
-            print('event info')
-            print(duration_seconds, duration_timedelta) #, x, y)
+            #print('event info')
+            #print(duration_seconds, duration_timedelta) #, x, y)
             x = x.tolist()
             y = y.tolist()
 
@@ -630,10 +635,10 @@ class CheckSEPApp:
             # PLOT VERTICAL LINES AT THE START AND END OF EACH EVENT INTERPRETATION
             self.vertical_lines.append((self.ax.axvline(x=x[0], color=config.color.matplotlib_color_cycle[counter], linewidth=2, linestyle='--'), self.ax.axvline(x=x[-1], color=config.color.matplotlib_color_cycle[counter], linewidth=2, linestyle='--')))
             
-            print('counter loop', len(self.confirmed_times), counter, self.current_plot_index)
+            #print('counter loop', len(self.confirmed_times), counter, self.current_plot_index)
             if len(self.confirmed_times) == self.current_plot_index:
                 self.confirmed_times.append(pd.NaT)
-                print(self.confirmed_times)
+                #print(self.confirmed_times)
             
             counter += 1
 
@@ -654,7 +659,7 @@ class CheckSEPApp:
         self.fig.tight_layout(rect=[0.05, 0, 0.95, 1.0])
 
         
-        print('create plot', self.current_plot_index, len(self.confirmed_times), self.confirmed_times[self.current_plot_index])            
+        #print('create plot', self.current_plot_index, len(self.confirmed_times), self.confirmed_times[self.current_plot_index])            
         try:
             if pd.isnull(all(self.confirmed_times[self.current_plot_index])):
                 pass
@@ -722,13 +727,13 @@ class CheckSEPApp:
             self.table.delete(row)
 
         # ADD NEW DATA FOR THE CURRENT PLOT
-        print('update table')
-        # print(self.events)
-        print(self.current_plot_index)
+        #print('update table')
+        # #print(self.events)
+        #print(self.current_plot_index)
         event = self.events.iloc[self.current_plot_index]
-        print(event['duration'], type(event['duration']))
-        print(event)
-        print(type(event['start']))
+        #print(event['duration'], type(event['duration']))
+        #print(event)
+        #print(type(event['start']))
         try:
             start_table = event['start'].strftime('%Y-%m-%d %H:%M')
             end_table = event['end'].strftime('%Y-%m-%d %H:%M')
@@ -754,6 +759,7 @@ class CheckSEPApp:
         """NAVIGATE TO THE PREVIOUS PLOT."""    
         if self.current_plot_index > 0:
             self.current_plot_index -= 1 
+            plt.close(self.fig)
             self.create_plot()
             self.update_table()
 
@@ -762,6 +768,7 @@ class CheckSEPApp:
         if self.current_plot_index < len(self.stored_event_plots) - 1:
             self.current_plot_index += 1
             self.multiple_end = False
+            plt.close(self.fig)
             self.create_plot()
             self.update_table()
 
@@ -843,7 +850,7 @@ class CheckSEPApp:
 
     def confirm_end(self):
         """Confirms your chosen end time"""
-        print(self.current_plot_index)
+        #print(self.current_plot_index)
         self.current_ends.append(self.temp_end)
         self.confirmed_times[self.current_plot_index] = self.current_ends
         self.confirmed = True
@@ -855,7 +862,7 @@ class CheckSEPApp:
         
         self.root.quit()                      # STOP THE MAIN TKINTER LOOP
         self.root.destroy()                   # PROPERLY DESTROY THE TKINTER WINDOW
-        print("APPLICATION CLOSED CLEANLY.")  # CONFIRMATION IN THE CONSOLE
+        #print("APPLICATION CLOSED CLEANLY.")  # CONFIRMATION IN THE CONSOLE
         
 
     def on_click(self, event):
@@ -915,6 +922,7 @@ class CheckSEPApp:
             self.ax.set_xticklabels([datetime_given_days_since_epoch(tick).strftime('%Y-%m-%d %H:%M:%S') for tick in grid_positions])
             self.canvas.draw()
         
+    @memory_profiler.profile()
     def __call__(self):
         return self.end_times, self.confirmed_times
     
@@ -985,7 +993,7 @@ if __name__ == '__main__':
         counter += 1
 
     events = find_overlapping_events(event_list_dfs, event_labels, args_separate_energies)
-    print(events)
+    #print(events)
     
     # events = pd.read_csv('batch_event_list_GOES-07_integral.txt')
     # INITIALIZE TKINTER ROOT WINDOW
@@ -997,7 +1005,7 @@ if __name__ == '__main__':
     # app = CheckSEPApp(root, events)
     # root.mainloop()
     # initial_ends, confirmed_ends = app()
-    # print(initial_ends)
+    # #print(initial_ends)
     # elements_to_remove = {pd.NaT}
    
     
