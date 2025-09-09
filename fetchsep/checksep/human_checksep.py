@@ -922,7 +922,7 @@ class CheckSEPApp:
             self.ax.set_xticklabels([datetime_given_days_since_epoch(tick).strftime('%Y-%m-%d %H:%M:%S') for tick in grid_positions])
             self.canvas.draw()
         
-    @memory_profiler.profile()
+    # @memory_profiler.profile()
     def __call__(self):
         return self.end_times, self.confirmed_times
     
