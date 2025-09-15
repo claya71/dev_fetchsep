@@ -638,6 +638,8 @@ class CheckSEPApp:
             
             # duration_seconds, duration_timedelta, x, y, list_name, index, energy, observation, instrument, integral = event_interpretation
             duration_seconds, duration_timedelta, x, y = event_interpretation
+            # column_names = y.columns
+            
             #print('event info')
             #print(duration_seconds, duration_timedelta) #, x, y)
             x = x.tolist() 
@@ -968,8 +970,8 @@ if __name__ == '__main__':
     #     args_separate_energies = False
     # else:
     
-    args_event_list_directory = args.event_list
-    args_observation_directory = args.flux_files
+    event_list_files = [args.event_list]
+    observation_files = [args.flux_files]
     args_time_buffer = args.time_buffer
     args_instrument = args.instrument
     args_separate_energies = args.separate_energies
@@ -983,8 +985,8 @@ if __name__ == '__main__':
     # observation_files = label_df['observation_filename'].to_list()
     # instruments = label_df['instrument'].to_list()
     # event_list_labels = label_df['label'].to_list()     
-    event_list_files = ['./test/batch_event_list_GOES-07_integral.txt']
-    observation_files = ['./test/fluxes_GOES-07_integral_19870301_19960831.csv']
+    # event_list_files = ['./test/batch_event_list_GOES-07_integral.txt']
+    # observation_files = ['./test/fluxes_GOES-07_integral_19870301_19960831.csv']
     instruments = ['GOES']
     event_list_labels = ['GOES']
     counter = 0
