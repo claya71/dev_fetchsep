@@ -159,6 +159,21 @@ def create_checksep_list(fetchsep_file, checksep_ends):
 
     return output_filename
 
+def clean_up_chosen_time(input_time):
+    """
+    Clean-up step when selecting times, we will round
+    the time to the nearest 5 minutes
+    """
+    input_time = pd.to_datetime(input_time)
+    delta_min = input_time.minute % 5
+
+    final_time = datetime.datetime(input_time.year, input_time.month, input_time.day,
+                             input_time.hour, input_time.minute - delta_min)
+
+    return final_time
+
+
+
 
 
 def days_since_epoch(t):
@@ -588,7 +603,7 @@ class CheckSEPApp:
             condition = (dates_df['time_tag'] >= event['start']) & (dates_df['time_tag'] <= event['end'])
             time = dates_df[condition]['time_tag']
             
-            flux = dates_df[condition][energy_channel]
+            flux = dates_df[condition]#[energy_channel]
 
             event_interpretations.append((duration_seconds, duration_timedelta, time, flux)) #, row['list'], row['list_index'], row['energy'], row['observation'], row['instrument'], row['integral'])) #, buffer_time, buffer_flux))
             self.end_times.append(time.to_list()[-1])
@@ -625,11 +640,12 @@ class CheckSEPApp:
             duration_seconds, duration_timedelta, x, y = event_interpretation
             #print('event info')
             #print(duration_seconds, duration_timedelta) #, x, y)
-            x = x.tolist()
-            y = y.tolist()
-
-            # PLOT MULTIPLE LINES WITH DIFFERENT STYLES
-            self.lines.append(self.ax.plot(x, y, label='line', linewidth=1, zorder=10))
+            x = x.tolist() 
+            for i in y:
+                foo = y[i].tolist()
+                print(y[i])
+                # PLOT MULTIPLE LINES WITH DIFFERENT STYLES
+                self.lines.append(self.ax.plot(x, foo, label='line', linewidth=1, zorder=10))
           
 
             # PLOT VERTICAL LINES AT THE START AND END OF EACH EVENT INTERPRETATION
@@ -851,10 +867,11 @@ class CheckSEPApp:
     def confirm_end(self):
         """Confirms your chosen end time"""
         #print(self.current_plot_index)
-        self.current_ends.append(self.temp_end)
+        self.cleaned_time = clean_up_chosen_time(self.temp_end)
+        self.current_ends.append(self.cleaned_time)
         self.confirmed_times[self.current_plot_index] = self.current_ends
         self.confirmed = True
-        self.confirmed_line(pd.to_datetime(self.temp_end))
+        self.confirmed_line(pd.to_datetime(self.cleaned_time))
         self.multiple_end = False
 
     def on_close(self):
