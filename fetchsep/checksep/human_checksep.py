@@ -1,6 +1,7 @@
 import argparse
 import datetime
 import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.backends.backend_tkagg
 import matplotlib.pyplot as plt
 import numpy as np
@@ -638,16 +639,16 @@ class CheckSEPApp:
             
             # duration_seconds, duration_timedelta, x, y, list_name, index, energy, observation, instrument, integral = event_interpretation
             duration_seconds, duration_timedelta, x, y = event_interpretation
-            # column_names = y.columns
+            column_names = y.columns.tolist()
             
-            #print('event info')
-            #print(duration_seconds, duration_timedelta) #, x, y)
             x = x.tolist() 
-            for i in y:
-                foo = y[i].tolist()
-                # print(y[i])
-                # PLOT MULTIPLE LINES WITH DIFFERENT STYLES
-                self.lines.append(self.ax.plot(x, foo, label='line', linewidth=1, zorder=10))
+            for ec in y:
+                if ec == 'time_tag':
+                    pass
+                else:
+                    foo = y[ec].tolist()
+                    # PLOT MULTIPLE LINES WITH DIFFERENT STYLES
+                    self.lines.append(self.ax.plot(x, foo, label= ec, linewidth=1, zorder=10))
           
 
             # PLOT VERTICAL LINES AT THE START AND END OF EACH EVENT INTERPRETATION
