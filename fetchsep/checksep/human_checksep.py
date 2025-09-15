@@ -643,7 +643,7 @@ class CheckSEPApp:
             x = x.tolist() 
             for i in y:
                 foo = y[i].tolist()
-                print(y[i])
+                # print(y[i])
                 # PLOT MULTIPLE LINES WITH DIFFERENT STYLES
                 self.lines.append(self.ax.plot(x, foo, label='line', linewidth=1, zorder=10))
           
